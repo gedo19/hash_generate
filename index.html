@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -377,9 +376,24 @@
         <p>
         <h4>Результат:</h4>
         <textarea id="Fahrenheit" class="form-control" rows="2" aria-label="Large" aria-describedby="inputGroup-sizing-sm" placeholder="Результат"></textarea></p>
+		<table class="table invisible table-striped" id="themes_table">
+		  <thead>
+			<tr>
+			  <th scope="col">Продукт</th>
+			  <th scope="col">Подпродукт</th>
+			  <th scope="col">Канал</th>
+			  <th scope="col">Тематика</th>
+			  <th scope="col">Подтематика</th>
+			  <th scope="col">Хэш</th>
+			</tr>
+		  </thead>
+		  <tbody>
+
+		  </tbody>
+		</table>
     </div>
 <py-script>
-from js import navigator
+from js import navigator, document
 import hashlib
 
 def convert():
@@ -387,7 +401,18 @@ def convert():
     themeHash = hashlib.shake_256(str(celsius).replace('\t', ' ').encode('utf-8')).hexdigest(5)
     Element("Fahrenheit").element.innerText = themeHash + ' - уже скопирован в буфер обмена'
     navigator.clipboard.writeText(themeHash)
+    Element('celsius').element.value = "";
+    themes = celsius.split('\t');
+    if len(themes) == 5:
+        themes.append(themeHash)
+        table = document.getElementById("themes_table")
+        table.classList.remove("invisible")
+        tableBody = table.getElementsByTagName('tbody')[0];
+        newRow = tableBody.insertRow()
+        for theme in themes:
+            newCell = newRow.insertCell()
+            newText = document.createTextNode(theme)
+            newCell.appendChild(newText)
 </py-script>
  </body>
 </html>
-
