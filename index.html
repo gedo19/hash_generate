@@ -9,8 +9,8 @@
     
     <!-- bootstrap for styling , Pyscript can also be used for styling instead of bootstrap -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous" />
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
     <style>
 		/* py-config - not a component */
 	py-config {
@@ -367,12 +367,36 @@
             Калькулятор Shake-256
         </h1>
         <br />
-        <p><h3>Введи тематики:</h3>
-        <input id="celsius" type="text" class="form-control" aria-label="Large" aria-describedby="inputGroup-sizing-sm" placeholder="Введи тематики через пробел или скопируй со страницы с таблицей УВСК" /></p>
-        <center>
-            <button id="convert" type="submit" class="btn btn-info" py-click="convert()">Посчитать хэш</button>
-        </center>
-        
+		<ul class="nav nav-tabs" id="myTab" role="tablist">
+		  <li class="nav-item" role="presentation">
+			<button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#basic-mode-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Основной режим</button>
+		  </li>
+		  <li class="nav-item" role="presentation">
+			<button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#simple-mode-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Упрощённый режим</button>
+		  </li>
+		</ul>
+		<div class="tab-content" id="myTabContent">
+		  <div class="tab-pane fade show active" id="basic-mode-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
+			<p><h3>Введи тематики:</h3>
+			<input id="celsius" type="text" class="form-control" aria-label="Large" aria-describedby="inputGroup-sizing-sm" placeholder="Введи тематики через пробел или скопируй со страницы с таблицей УВСК" /></p>
+			<center>
+				<button id="convert" type="submit" class="btn btn-info" py-click="convert()">Посчитать хэш</button>
+			</center>
+		  </div>
+		  <div class="tab-pane fade" id="simple-mode-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+			<p><h3>Введи тематики:</h3></p>
+			<div class="input-group mb-3">
+			  <input type="text" id="product" class="form-control m-1" placeholder="Продукт" aria-label="Product">
+			  <input type="text" id="subproduct" class="form-control m-1" placeholder="Подпродукт" aria-label="Subproduct">
+			  <input type="text" id="channel" class="form-control m-1" placeholder="Канал" aria-label="Channel">
+			  <input type="text" id="theme" class="form-control m-1" placeholder="Тематика" aria-label="Theme">
+			  <input type="text" id="subtheme" class="form-control m-1" placeholder="Подтематика" aria-label="Subtheme">
+			</div>
+			<center>
+				<button id="convert_simple" type="submit" class="btn btn-info" py-click="convert_simple()">Посчитать хэш</button>
+			</center>
+		  </div>
+		</div>
         <p>
         <h4>Результат:</h4>
         <textarea id="Fahrenheit" class="form-control" rows="2" aria-label="Large" aria-describedby="inputGroup-sizing-sm" placeholder="Результат"></textarea></p>
@@ -392,6 +416,21 @@
 		  </tbody>
 		</table>
     </div>
+	<script>
+		const themes = document.querySelectorAll('input.m-1');
+		themes.forEach((theme) => {
+			theme.addEventListener('input', function() {
+				this.value = this.value.trim();
+				const input = this.value;
+				const inputThemes = input.split('\t');
+				if (inputThemes.length === 5) {
+					inputThemes.forEach((inputTheme, i) => {
+						themes[i].value = inputTheme.trim();
+					});
+				}
+			})
+		});
+	</script>
 <py-script>
 from js import navigator, document
 import hashlib
@@ -403,6 +442,33 @@ def convert():
     navigator.clipboard.writeText(themeHash)
     Element('celsius').element.value = "";
     themes = celsius.split('\t');
+    if len(themes) == 5:
+        themes.append(themeHash)
+        table = document.getElementById("themes_table")
+        table.classList.remove("invisible")
+        tableBody = table.getElementsByTagName('tbody')[0];
+        newRow = tableBody.insertRow()
+        for theme in themes:
+            newCell = newRow.insertCell()
+            newText = document.createTextNode(theme)
+            newCell.appendChild(newText)
+
+def convert_simple():
+    product = Element('product').element.value
+    subproduct = Element('subproduct').element.value
+    channel = Element('channel').element.value
+    theme = Element('theme').element.value
+    subtheme = Element('subtheme').element.value
+    fiveThemes = f"{product} {subproduct} {channel} {theme} {subtheme}"
+    themeHash = hashlib.shake_256(fiveThemes.encode('utf-8')).hexdigest(5)
+    Element("Fahrenheit").element.innerText = themeHash + ' - уже скопирован в буфер обмена'
+    navigator.clipboard.writeText(themeHash)
+    Element('product').element.value = ""
+    Element('subproduct').element.value = ""
+    Element('channel').element.value = ""
+    Element('theme').element.value = ""
+    Element('subtheme').element.value = ""
+    themes = [product, subproduct, channel, theme, subtheme]
     if len(themes) == 5:
         themes.append(themeHash)
         table = document.getElementById("themes_table")
