@@ -1,3 +1,3 @@
 # hash_generate
 
-https://itillonis.github.io/hash_generate/
+https://gedo19.github.io/hash_generate/
